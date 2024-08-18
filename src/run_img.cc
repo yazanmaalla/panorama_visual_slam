@@ -73,28 +73,25 @@ int mono_tracking(const std::shared_ptr<stella_vslam::system>& slam,
     const auto frames = sequence.get_frames();
 
     // create a viewer object
-    // and pass the frame_publisher and the map_publisher
-#ifdef HAVE_PANGOLIN_VIEWER
+
+
     std::shared_ptr<pangolin_viewer::viewer> viewer;
-    if (viewer_string == "pangolin_viewer") {
-        viewer = std::make_shared<pangolin_viewer::viewer>(
-            stella_vslam::util::yaml_optional_ref(cfg->yaml_node_, "PangolinViewer"),
-            slam,
-            slam->get_frame_publisher(),
-            slam->get_map_publisher());
-    }
-#endif
-
-
+    
+    viewer = std::make_shared<pangolin_viewer::viewer>(
+        stella_vslam::util::yaml_optional_ref(cfg->yaml_node_, "PangolinViewer"),
+        slam,
+        slam->get_frame_publisher(),
+        slam->get_map_publisher());
+    
     std::vector<double> track_times;
     track_times.reserve(frames.size());
     double timestamp = start_timestamp;
 
-    // run the slam in another thread
+    // run slam in another thread
     std::thread thread([&]() {
         for (unsigned int i = 0; i < frames.size(); ++i) {
 
-            // wait until the loop BA is finished
+            // wait loop BA 
             if (wait_loop_ba) {
                 while (slam->loop_BA_is_running() || !slam->mapping_module_is_enabled()) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -129,7 +126,7 @@ int mono_tracking(const std::shared_ptr<stella_vslam::system>& slam,
             timestamp += 1.0 / slam->get_camera()->fps_;
 
 
-            // check if the termination of slam system is requested or not
+            // if termination of slam is requested 
             if (slam->terminate_is_requested()) {
                 break;
             }
@@ -144,20 +141,11 @@ int mono_tracking(const std::shared_ptr<stella_vslam::system>& slam,
         // automatically close the viewer
         if (auto_term) {
             if (viewer_string == "pangolin_viewer") {
-#ifdef HAVE_PANGOLIN_VIEWER
                 viewer->request_terminate();
-#endif
             }
-
         }
     });
-
-    // run the viewer in the current thread
-    if (viewer_string == "pangolin_viewer") {
-#ifdef HAVE_PANGOLIN_VIEWER
         viewer->run();
-#endif
-    }
     
 
     thread.join();
@@ -250,32 +238,36 @@ int main(int argc, char* argv[]) {
 
     // viewer
     std::string viewer_string;
-    if (viewer->is_set()) {
-        viewer_string = viewer->value();
-        if (viewer_string != "pangolin_viewer"
-            && viewer_string != "none") {
-            std::cerr << "invalid arguments (--viewer)" << std::endl
-                      << std::endl
-                      << op << std::endl;
-            return EXIT_FAILURE;
-        }
-#ifndef HAVE_PANGOLIN_VIEWER
-        if (viewer_string == "pangolin_viewer") {
-            std::cerr << "pangolin_viewer not linked" << std::endl
-                      << std::endl
-                      << op << std::endl;
-            return EXIT_FAILURE;
-        }
-#endif
 
-    }
-    else {
-#ifdef HAVE_IRIDESCENCE_VIEWER
-        viewer_string = "iridescence_viewer";
-#elif defined(HAVE_PANGOLIN_VIEWER)
+
+
+
+    // if (viewer->is_set()) {
+        // viewer_string = viewer->value();
+        // if (viewer_string != "pangolin_viewer"
+            // && viewer_string != "none") {
+            // std::cerr << "invalid arguments (--viewer)" << std::endl
+                    //   << std::endl
+                    //   << op << std::endl;
+            // return EXIT_FAILURE;
+        // }
+// #ifndef HAVE_PANGOLIN_VIEWER
+//         if (viewer_string == "pangolin_viewer") {
+//             std::cerr << "pangolin_viewer not linked" << std::endl
+//                       << std::endl
+//                       << op << std::endl;
+//             return EXIT_FAILURE;
+//         }
+// #endif
+
+//     }
+//     else {
+// #ifdef HAVE_IRIDESCENCE_VIEWER
+//         viewer_string = "iridescence_viewer";
+// #elif defined(HAVE_PANGOLIN_VIEWER)
         viewer_string = "pangolin_viewer";
-#endif
-    }
+// #endif
+//     }
 
     // setup logger
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] %^[%L] %v%$");
@@ -362,7 +354,7 @@ int main(int argc, char* argv[]) {
 
 
 
-auto pointcloud =slam->map_db_;
+// auto pointcloud =slam->map_db_;
 
 #ifdef USE_GOOGLE_PERFTOOLS
     ProfilerStop();
