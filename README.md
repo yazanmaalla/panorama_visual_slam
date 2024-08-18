@@ -17,8 +17,8 @@ The solution is based on [Stella-SLAM](https://github.com/stella-cv/stella_vslam
 
 
 
-**Results**
-Results are shown in the folder [results](https://github.com/yazanmaalla/panorama_visual_slam/tree/main/results) :
+**Results**//
+Results are shown in the folder [results](https://github.com/yazanmaalla/panorama_visual_slam/tree/main/results) ://
 1. Trajectory of the camera in the TUM form:
         tx,ty,tz,qx,qy,qz,qw
 2. Point cloud of the map in PLY form.
